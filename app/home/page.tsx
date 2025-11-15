@@ -5,25 +5,28 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/src/context/AuthContext";
 
 export default function HomePage() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) router.push("/login");
+    if (!loading && !user) {
+      router.push("/login");
+    } else if (!loading && user) {
+      // Redireciona para a loja
+      router.push("/shop");
+    }
   }, [loading, user, router]);
 
-  if (loading) return <div className="p-6">Carregando...</div>;
-  if (!user) return null; // redirecionando
-
-  return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold">Home</h1>
-      <p>Bem-vindo(a): <strong>{user.email}</strong></p>
-      <div className="mt-4">
-        <button onClick={async ()=>{ await logout(); router.push("/login"); }} className="px-3 py-2 bg-red-600 text-white rounded">
-          Logout
-        </button>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
       </div>
-    </main>
-  );
+    );
+  }
+
+  return null; // redirecionando
 }

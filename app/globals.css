@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
 }
 
 @theme inline {
@@ -24,3 +24,66 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Forçar textos mais escuros em todos os componentes */
+* {
+  color: inherit;
+}
+
+/* Substituir todas as classes de texto cinza por preto */
+.text-gray-600,
+.text-gray-500,
+.text-gray-700,
+.text-gray-800 {
+  color: #000000 !important;
+}
+
+.text-gray-400 {
+  color: #374151 !important;
+}
+
+.text-gray-300 {
+  color: #4b5563 !important;
+}
+
+/* Labels e textos de formulário mais escuros */
+label,
+.text-sm,
+.text-xs {
+  color: #000000 !important;
+}
+
+/* Textos de input mais escuros */
+input,
+select,
+textarea {
+  color: #000000 !important;
+}
+
+/* Placeholders mais escuros */
+input::placeholder,
+textarea::placeholder {
+  color: #4b5563 !important;
+}
+
+/* Botões com texto mais escuro quando necessário */
+button:not([class*="bg-"]) {
+  color: #000000;
+}
+
+/* Links e spans */
+a:not([class*="text-white"]):not([class*="text-blue"]),
+span:not([class*="text-white"]):not([class*="text-red"]):not([class*="text-green"]):not([class*="text-yellow"]) {
+  color: #000000 !important;
+}
+
+/* Parágrafos */
+p {
+  color: #000000 !important;
+}
+
+/* Headings mais escuros */
+h1, h2, h3, h4, h5, h6 {
+  color: #000000 !important;
+}
+

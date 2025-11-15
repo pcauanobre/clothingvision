@@ -26,7 +26,8 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(email, pass, remember);
-      router.push("/home");
+      // Redireciona para a loja após login
+      router.push("/shop");
     } catch (err: any) {
       setError("E-mail ou senha inválidos.");
       setLoading(false);
