@@ -2,6 +2,7 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -17,7 +18,7 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
 // Evita erro de analytics em SSR
-let analytics = null;
+let analytics: any = null;
 if (typeof window !== "undefined") {
   isSupported().then((yes) => {
     if (yes) analytics = getAnalytics(app);
@@ -32,4 +33,6 @@ if (typeof window !== "undefined") {
 }
 
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+
 export { analytics };

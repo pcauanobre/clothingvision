@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "@/src/lib/firebase";
+import { auth } from "@/lib/firebase";
 import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
@@ -15,12 +15,15 @@ import {
   setPersistence,
   User,
 } from "firebase/auth";
-import { createUserProfile } from "@/src/services/userService";
-import { UserModel } from "@/src/models/UserModel";
+
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { UserModel } from "@/models/UserModel";
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  isAdmin: boolean;
   registerUser: (
     name: string,
     email: string,
@@ -40,11 +43,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       setLoading(false);
+
+      if (u) {
+        try {
+          const ref = doc(db, "users", u.uid);
+          const snap = await getDoc(ref);
+          if (snap.exists()) {
+            const data = snap.data() as Partial<UserModel>;
+            setIsAdmin(Boolean(data?.isAdmin));
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (err) {
+          console.warn("[Auth] erro ao buscar perfil:", err);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+
       console.log("[Auth] onAuthStateChanged:", !!u, u?.uid ?? null);
     });
     return () => unsub();
@@ -56,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     phone: string,
     age: number,
-    isAdmin: boolean
+    adminFlag: boolean
   ) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const newUser: UserModel = {
@@ -65,10 +88,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       phone,
       age,
-      isAdmin,
+      isAdmin: adminFlag,
       createdAt: new Date().toISOString(),
     };
-    await createUserProfile(newUser);
+    await setDoc(doc(db, "users", newUser.uid), newUser);
   }
 
   async function login(email: string, pass: string, remember: boolean) {
@@ -80,16 +103,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   }
 
-  // envia email com link que redireciona para /reset-password do seu app
   async function sendPasswordReset(email: string) {
     const actionCodeSettings = {
-      // coloca o email no continueUrl para facilitar debug e preenchimento
-      url: `${window.location.origin}/reset-password?email=${encodeURIComponent(email)}`,
+      url: `${typeof window !== "undefined" ? window.location.origin : ""}/reset-password?email=${encodeURIComponent(
+        email
+      )}`,
       handleCodeInApp: true,
     };
-    console.log("[Auth] sendPasswordReset -> actionCodeSettings.url:", actionCodeSettings.url);
     await sendPasswordResetEmail(auth, email, actionCodeSettings);
-    console.log("[Auth] password reset enviado para", email);
   }
 
   async function confirmResetPassword(oobCode: string, newPassword: string) {
@@ -98,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, registerUser, login, logout, sendPasswordReset, confirmResetPassword }}
+      value={{ user, loading, isAdmin, registerUser, login, logout, sendPasswordReset, confirmResetPassword }}
     >
       {children}
     </AuthContext.Provider>
