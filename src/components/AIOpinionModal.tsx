@@ -128,8 +128,29 @@ export default function AIOpinionModal({ item, isOpen, onClose }: AIOpinionModal
 
                 {/* AI response */}
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-3xl rounded-tl-sm p-4 max-w-[80%]">
-                    <p className="text-gray-800 leading-relaxed">{opinion}</p>
+                  <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl rounded-tl-sm p-6 max-w-[90%] shadow-md border border-gray-100">
+                    <div className="space-y-3 text-gray-800">
+                      {opinion.split('\n').map((line, index) => {
+                        // Renderiza títulos em negrito
+                        if (line.startsWith('**') && line.endsWith('**')) {
+                          const title = line.replace(/\*\*/g, '');
+                          return (
+                            <h4 key={index} className="font-semibold text-gray-900 text-sm mt-3 first:mt-0">
+                              {title}
+                            </h4>
+                          );
+                        }
+                        // Renderiza linhas normais
+                        if (line.trim()) {
+                          return (
+                            <p key={index} className="text-[15px] leading-relaxed text-gray-700">
+                              {line}
+                            </p>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
                   </div>
                 </div>
               </>
