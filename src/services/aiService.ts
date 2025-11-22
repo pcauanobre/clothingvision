@@ -2,47 +2,42 @@
 
 import { AIOpinionRequest, AIOpinionResponse } from "@/models/ItemModel";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
-
 export const aiService = {
   /**
    * Solicita opinião da IA sobre um item
    */
   async getItemOpinion(request: AIOpinionRequest): Promise<AIOpinionResponse> {
-    // Por enquanto, retorna opinião mockada
-    // Quando tiver backend com IA, descomente o código abaixo:
-    /*
     try {
-      const response = await fetch(`${API_BASE_URL}/ai/opinion`, {
+      const response = await fetch("/api/ai/opinion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(request),
+        body: JSON.stringify({
+          itemName: request.itemName,
+          itemDescription: request.itemDescription,
+          category: "roupa", // Pode expandir futuramente com categoria real do item
+        }),
       });
 
       if (!response.ok) {
-        throw new Error(`Erro ao obter opinião da IA: ${response.statusText}`);
+        console.error(`Erro ao obter opinião da IA: ${response.statusText}`);
+        // Fallback para mock se API falhar
+        return getMockOpinion(request);
       }
 
       const data: AIOpinionResponse = await response.json();
       return data;
     } catch (error) {
       console.error("Erro ao consultar IA:", error);
+      // Fallback para mock se houver erro de rede
       return getMockOpinion(request);
     }
-    */
-    
-    // Simula delay da IA para parecer real
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Retorna opinião mockada para desenvolvimento
-    return getMockOpinion(request);
   },
 };
 
 /**
- * Resposta mockada da IA para desenvolvimento
+ * Resposta mockada da IA para fallback
  */
 function getMockOpinion(request: AIOpinionRequest): AIOpinionResponse {
   const opinions = [
@@ -62,3 +57,4 @@ function getMockOpinion(request: AIOpinionRequest): AIOpinionResponse {
     opinion: randomOpinion,
   };
 }
+

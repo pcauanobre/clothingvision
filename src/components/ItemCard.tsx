@@ -1,7 +1,6 @@
 // src/components/ItemCard.tsx
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Item } from "@/models/ItemModel";
 
@@ -13,14 +12,19 @@ export default function ItemCard({ item }: ItemCardProps) {
   return (
     <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
       <div className="relative aspect-square overflow-hidden bg-gray-100">
-        <Image
-          src={item.imageUrl}
-          alt={item.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-        
+        {/* Use <img> em vez de next/image para evitar erro com hosts remotos não configurados */}
+        {item.imageUrl ? (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-400">
+            Sem imagem
+          </div>
+        )}
+
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
           <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-xs font-medium text-gray-900 rounded-full">
