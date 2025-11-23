@@ -4,19 +4,25 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { itemService } from "@/src/services/itemService";
+import { deleteItem } from "@/services/productService";
+import { useAuth } from "@/context/AuthContext";
 import Loading from "@/src/components/Loading";
 import AIOpinionModal from "@/src/components/AIOpinionModal";
+import EditProductModal from "@/src/components/EditProductModal";
 import { Item } from "@/models/ItemModel";
 
 export default function ItemPage() {
   const params = useParams();
   const router = useRouter();
+  const { isAdmin } = useAuth();
   const id = params?.id as string;
 
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -48,6 +54,24 @@ export default function ItemPage() {
     load();
     return () => { mounted = false; };
   }, [id]);
+
+  async function handleDelete() {
+    if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+    setDeleting(true);
+    try {
+      await deleteItem(id);
+      router.push("/catalogo");
+    } catch (err) {
+      console.error("Erro ao deletar produto:", err);
+      alert("Erro ao excluir produto. Veja o console.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function handleEditSuccess(updatedItem: Item) {
+    setItem(updatedItem);
+  }
 
   if (loading) return <Loading />;
   if (error) {
@@ -173,6 +197,25 @@ export default function ItemPage() {
               Pedir Opinião da IA
             </button>
 
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => setEditOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition"
+                >
+                  Editar
+                </button>
+
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition disabled:opacity-50"
+                >
+                  {deleting ? "Excluindo..." : "Excluir"}
+                </button>
+              </>
+            )}
+
             <button
               onClick={() => router.push("/catalogo")}
               className="px-4 py-2 text-gray-700 underline"
@@ -185,6 +228,9 @@ export default function ItemPage() {
 
       {/* IA modal */}
       <AIOpinionModal item={item} isOpen={aiOpen} onClose={() => setAiOpen(false)} />
+
+      {/* Edit modal */}
+      <EditProductModal item={item} isOpen={editOpen} onClose={() => setEditOpen(false)} onSuccess={handleEditSuccess} />
     </div>
   );
 }

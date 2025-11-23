@@ -1,7 +1,7 @@
 // src/services/itemService.ts
 import { Item } from "@/models/ItemModel";
-import { db } from "@/src/lib/firebase";
-import { collection, getDocs, doc, getDoc, query, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, doc, getDoc, query, orderBy, updateDoc, deleteDoc } from "firebase/firestore";
 
 function convertDocToItem(id: string, data: any): Item {
   // tenta converter timestamps
@@ -48,6 +48,27 @@ export const itemService = {
     } catch (err) {
       console.error("itemService.getItemById error:", err);
       return null;
+    }
+  },
+  async updateItem(id: string, data: Partial<Omit<Item, "id" | "createdAt">>) {
+    try {
+      const dref = doc(db, "items", id);
+      await updateDoc(dref, data as any);
+      return true;
+    } catch (err) {
+      console.error("itemService.updateItem error:", err);
+      return false;
+    }
+  },
+
+  async deleteItem(id: string) {
+    try {
+      const dref = doc(db, "items", id);
+      await deleteDoc(dref);
+      return true;
+    } catch (err) {
+      console.error("itemService.deleteItem error:", err);
+      return false;
     }
   },
 };
